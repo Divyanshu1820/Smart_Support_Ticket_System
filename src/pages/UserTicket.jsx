@@ -636,390 +636,43 @@
 // src/pages/UserTicket.jsx
 
 
-// import { useEffect, useMemo, useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { auth } from "../auth";
-// import { getTickets, deleteTicket as removeTicket } from "../services/tickets";
-
-
-// export default function UserTicket() {
-//   const user = auth.getUser();
-
-//   // Tickets start empty
-//   const [tickets, setTickets] = useState([]);
-
-//   // Filters / query
-//   const [type, setType] = useState("All Types");
-//   const [priority, setPriority] = useState("All Priority");
-//   const [query, setQuery] = useState("");
-//   const [startDate, setStartDate] = useState(""); // yyyy-mm-dd
-//   const [endDate, setEndDate] = useState("");
-
-//   // Pagination
-//   const [page, setPage] = useState(1);
-//   const pageSize = 5;
-
-//   // Create Ticket modal
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   const [newTicket, setNewTicket] = useState({
-//     title: "",
-//     type: "",
-//     description: "",
-//     priority: "",
-//     project: "",
-//     assignedTo: "",
-//   });
-//   const [formErr, setFormErr] = useState("");
-
-//   const TYPE_OPTIONS = ["All Types", "Type 1", "Type 2", "Type 3"];
-//   const PRIORITY_OPTIONS = ["All Priority", "P1", "P2", "P3"];
-
-//   const filtered = useMemo(() => {
-//     return tickets.filter(t => {
-//       const matchType = type === "All Types" || t.type === type;
-//       const matchPrio = priority === "All Priority" || t.priority === priority;
-//       const matchQuery =
-//         !query ||
-//         t.title.toLowerCase().includes(query.toLowerCase()) ||
-//         t.description.toLowerCase().includes(query.toLowerCase()) ||
-//         t.project.toLowerCase().includes(query.toLowerCase());
-
-//       const updatedDateOnly = t.updated?.slice(0, 10);
-//       const okStart = !startDate || updatedDateOnly >= startDate;
-//       const okEnd = !endDate || updatedDateOnly <= endDate;
-
-//       return matchType && matchPrio && matchQuery && okStart && okEnd;
-//     });
-//   }, [tickets, type, priority, query, startDate, endDate]);
-
-//   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-//   const currentRows = filtered.slice((page - 1) * pageSize, page * pageSize);
-//   const resetPage = () => setPage(1);
-
-//   // Modal handlers
-//   function openCreateModal() {
-//     setFormErr("");
-//     setNewTicket({
-//       title: "",
-//       type: "",
-//       description: "",
-//       priority: "",
-//       project: "",
-//       assignedTo: "",
-//     });
-//     setIsModalOpen(true);
-//   }
-//   function closeCreateModal() { setIsModalOpen(false); }
-//   function handleNewTicketChange(e) {
-//     const { name, value } = e.target;
-//     setNewTicket(prev => ({ ...prev, [name]: value }));
-//   }
-//   function submitNewTicket(e) {
-//     e.preventDefault();
-//     setFormErr("");
-
-//     if (!newTicket.title || !newTicket.type || !newTicket.priority) {
-//       setFormErr("Please fill Title, Type, and Priority");
-//       return;
-//     }
-
-//     const idSuffix = Math.floor(Math.random() * 100000);
-//     const id = `INC${idSuffix}`;
-//     const now = new Date();
-//     const isoDate = now.toISOString().slice(0, 19).replace("T", " ");
-
-//     const ticket = {
-//       id,
-//       title: newTicket.title,
-//       type: newTicket.type,
-//       description: newTicket.description || "",
-//       priority: newTicket.priority,
-//       project: newTicket.project || "",
-//       assignedTo: newTicket.assignedTo || "",
-//       status: "Acknowledged",
-//       updated: isoDate,
-//     };
-
-//     setTickets(prev => [ticket, ...prev]);
-//     setIsModalOpen(false);
-//     resetPage();
-//   }
-
-//   function handleDelete(id) {
-//     setTickets(prev => prev.filter(t => t.id !== id));
-//     resetPage();
-//   }
-
-//   return (
-//     <section className="page">
-//       {/* Header Bar: Create + signed-in */}
-//       <div className="page-header">
-//         <button className="btn primary pill" onClick={openCreateModal}>Create Ticket</button>
-//         <span className="muted">
-//           Signed in as <strong>{user?.email}</strong>
-//         </span>
-//       </div>
-
-//       {/* Filters Panel (boxed) */}
-//       <div className="panel panel--soft">
-//         <div className="filters-grid">
-//           <select
-//             className="input"
-//             value={type}
-//             onChange={e => { setType(e.target.value); resetPage(); }}
-//           >
-//             {TYPE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-//           </select>
-
-//           <select
-//             className="input"
-//             value={priority}
-//             onChange={e => { setPriority(e.target.value); resetPage(); }}
-//           >
-//             {PRIORITY_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-//           </select>
-
-//           <input
-//             className="input"
-//             type="text"
-//             placeholder="Search by Title, Description and Project"
-//             value={query}
-//             onChange={e => { setQuery(e.target.value); resetPage(); }}
-//           />
-
-//           <div className="input-group">
-//             <label className="label">Start Date</label>
-//             <input
-//               className="input"
-//               type="date"
-//               value={startDate}
-//               onChange={e => { setStartDate(e.target.value); resetPage(); }}
-//             />
-//           </div>
-
-//           <div className="input-group">
-//             <label className="label">End Date</label>
-//             <input
-//               className="input"
-//               type="date"
-//               value={endDate}
-//               onChange={e => { setEndDate(e.target.value); resetPage(); }}
-//             />
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Table Panel (boxed) */}
-//       <div className="panel panel--soft">
-//         <div className="table-responsive">
-//           <table className="table table--dark">
-//             <thead>
-//               <tr>
-//                 <th style={{ width: "14%" }}>Title</th>
-//                 <th style={{ width: "10%" }}>Type</th>
-//                 <th>Description</th>
-//                 <th style={{ width: "10%" }}>Priority</th>
-//                 <th style={{ width: "14%" }}>ProjectName</th>
-//                 <th style={{ width: "14%" }}>Assigned To</th>
-//                 <th style={{ width: "14%" }}>Status</th>
-//                 <th style={{ width: "14%" }}>Updated Date ^</th>
-//                 <th style={{ width: "10%" }}>Action</th>
-//               </tr>
-//             </thead>
-
-//             <tbody>
-//               {currentRows.length === 0 ? (
-//                 <tr>
-//                   <td colSpan={9} className="empty-row">
-//                     No tickets yet. Click <strong>Create Ticket</strong> to add your first ticket.
-//                   </td>
-//                 </tr>
-//               ) : (
-//                 currentRows.map(row => (
-//                   <tr key={row.id}>
-//                     <td><a className="link" href={"#"+row.id}>{row.id}</a></td>
-//                     <td>{row.type}</td>
-//                     <td>{row.description}</td>
-//                     <td>{row.priority}</td>
-//                     <td>{row.project}</td>
-//                     <td>{row.assignedTo}</td>
-//                     <td>{row.status}</td>
-//                     <td>{row.updated}</td>
-//                     <td>
-//                       <button className="btn danger pill" onClick={() => handleDelete(row.id)}>
-//                         Delete
-//                       </button>
-//                     </td>
-//                   </tr>
-//                 ))
-//               )}
-//             </tbody>
-//           </table>
-//         </div>
-
-//         {/* Pagination — show only when rows exist */}
-//         {filtered.length > 0 && (
-//           <div className="pagination">
-//             <button
-//               className="btn ghost pill"
-//               disabled={page === 1}
-//               onClick={() => setPage(p => Math.max(1, p - 1))}
-//             >
-//               ‹
-//             </button>
-
-//             {Array.from({ length: totalPages }).map((_, i) => (
-//               <button
-//                 key={i}
-//                 className={`btn pill ${page === i + 1 ? "primary" : "ghost"}`}
-//                 onClick={() => setPage(i + 1)}
-//               >
-//                 {i + 1}
-//               </button>
-//             ))}
-
-//             <button
-//               className="btn ghost pill"
-//               disabled={page === totalPages}
-//               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-//             >
-//               ›
-//             </button>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Create Ticket Modal (respects dark theme; boxed card) */}
-//       {isModalOpen && (
-//         <div className="modal-backdrop" onClick={closeCreateModal}>
-//           <div className="panel" style={{ maxWidth: "640px", width: "92vw" }} onClick={e => e.stopPropagation()}>
-//             <h3>Create Ticket</h3>
-//             {formErr && <div className="error">{formErr}</div>}
-
-//             <form onSubmit={submitNewTicket} className="form">
-//               <label className="field">
-//                 <span>Title*</span>
-//                 <input
-//                   className="input"
-//                   type="text"
-//                   name="title"
-//                   value={newTicket.title}
-//                   onChange={handleNewTicketChange}
-//                   required
-//                 />
-//               </label>
-
-//               <div className="form-row form-row--inline" style={{ gap: "0.75rem" }}>
-//                 <label className="field" style={{ flex: 1 }}>
-//                   <span>Type*</span>
-//                   <select
-//                     className="input"
-//                     name="type"
-//                     value={newTicket.type}
-//                     onChange={handleNewTicketChange}
-//                     required
-//                   >
-//                     <option value="">Select</option>
-//                     <option value="Type 1">Type 1</option>
-//                     <option value="Type 2">Type 2</option>
-//                     <option value="Type 3">Type 3</option>
-//                   </select>
-//                 </label>
-
-//                 <label className="field" style={{ flex: 1 }}>
-//                   <span>Priority*</span>
-//                   <select
-//                     className="input"
-//                     name="priority"
-//                     value={newTicket.priority}
-//                     onChange={handleNewTicketChange}
-//                     required
-//                   >
-//                     <option value="">Select</option>
-//                     <option value="P1">P1</option>
-//                     <option value="P2">P2</option>
-//                     <option value="P3">P3</option>
-//                   </select>
-//                 </label>
-//               </div>
-
-//               <label className="field">
-//                 <span>Description</span>
-//                 <textarea
-//                   className="input"
-//                   name="description"
-//                   rows={3}
-//                   value={newTicket.description}
-//                   onChange={handleNewTicketChange}
-//                 />
-//               </label>
-
-//               <div className="form-row form-row--inline" style={{ gap: "0.75rem" }}>
-//                 <label className="field" style={{ flex: 1 }}>
-//                   <span>Project</span>
-//                   <input
-//                     className="input"
-//                     type="text"
-//                     name="project"
-//                     value={newTicket.project}
-//                     onChange={handleNewTicketChange}
-//                   />
-//                 </label>
-
-//                 <label className="field" style={{ flex: 1 }}>
-//                   <span>Assigned To</span>
-//                   <input
-//                     className="input"
-//                     type="text"
-//                     name="assignedTo"
-//                     value={newTicket.assignedTo}
-//                     onChange={handleNewTicketChange}
-//                   />
-//                 </label>
-//               </div>
-
-//               <div className="form-row form-row--inline" style={{ justifyContent: "flex-end", gap: "0.5rem" }}>
-//                 <button type="button" className="btn ghost pill" onClick={closeCreateModal}>Cancel</button>
-//                 <button type="submit" className="btn primary pill">Save</button>
-//               </div>
-//             </form>
-//           </div>
-//         </div>
-//       )}
-//     </section>
-//   );
-// }
-
-// src/pages/UserTicket.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../auth";
 import { getTickets, deleteTicket as removeTicket } from "../services/tickets";
 
+
 export default function UserTicket() {
-  const navigate = useNavigate();
   const user = auth.getUser();
 
+  // Tickets start empty
   const [tickets, setTickets] = useState([]);
 
-  // Filters
+  // Filters / query
   const [type, setType] = useState("All Types");
   const [priority, setPriority] = useState("All Priority");
   const [query, setQuery] = useState("");
-  const [startDate, setStartDate] = useState("");
+  const [startDate, setStartDate] = useState(""); // yyyy-mm-dd
   const [endDate, setEndDate] = useState("");
 
   // Pagination
   const [page, setPage] = useState(1);
   const pageSize = 5;
 
+  // Create Ticket modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newTicket, setNewTicket] = useState({
+    title: "",
+    type: "",
+    description: "",
+    priority: "",
+    project: "",
+    assignedTo: "",
+  });
+  const [formErr, setFormErr] = useState("");
+
   const TYPE_OPTIONS = ["All Types", "Type 1", "Type 2", "Type 3"];
   const PRIORITY_OPTIONS = ["All Priority", "P1", "P2", "P3"];
-
-  // Load tickets on mount (and on re-mount when returning from create page)
-  useEffect(() => {
-    setTickets(getTickets());
-  }, []);
 
   const filtered = useMemo(() => {
     return tickets.filter(t => {
@@ -1043,37 +696,86 @@ export default function UserTicket() {
   const currentRows = filtered.slice((page - 1) * pageSize, page * pageSize);
   const resetPage = () => setPage(1);
 
-  // ✅ Navigate to new page instead of showing a modal
-  function goToCreate() {
-    navigate("/dashboard/create");
+  // Modal handlers
+  function openCreateModal() {
+    setFormErr("");
+    setNewTicket({
+      title: "",
+      type: "",
+      description: "",
+      priority: "",
+      project: "",
+      assignedTo: "",
+    });
+    setIsModalOpen(true);
+  }
+  function closeCreateModal() { setIsModalOpen(false); }
+  function handleNewTicketChange(e) {
+    const { name, value } = e.target;
+    setNewTicket(prev => ({ ...prev, [name]: value }));
+  }
+  function submitNewTicket(e) {
+    e.preventDefault();
+    setFormErr("");
+
+    if (!newTicket.title || !newTicket.type || !newTicket.priority) {
+      setFormErr("Please fill Title, Type, and Priority");
+      return;
+    }
+
+    const idSuffix = Math.floor(Math.random() * 100000);
+    const id = `INC${idSuffix}`;
+    const now = new Date();
+    const isoDate = now.toISOString().slice(0, 19).replace("T", " ");
+
+    const ticket = {
+      id,
+      title: newTicket.title,
+      type: newTicket.type,
+      description: newTicket.description || "",
+      priority: newTicket.priority,
+      project: newTicket.project || "",
+      assignedTo: newTicket.assignedTo || "",
+      status: "Acknowledged",
+      updated: isoDate,
+    };
+
+    setTickets(prev => [ticket, ...prev]);
+    setIsModalOpen(false);
+    resetPage();
   }
 
   function handleDelete(id) {
-    const next = removeTicket(id);
-    setTickets(next);
+    setTickets(prev => prev.filter(t => t.id !== id));
     resetPage();
   }
 
   return (
     <section className="page">
-      {/* Header */}
+      {/* Header Bar: Create + signed-in */}
       <div className="page-header">
-        <button type="button" className="btn primary pill" onClick={goToCreate}>
-          Create Ticket
-        </button>
+        <button className="btn primary pill" onClick={openCreateModal}>Create Ticket</button>
         <span className="muted">
           Signed in as <strong>{user?.email}</strong>
         </span>
       </div>
 
-      {/* Filters */}
+      {/* Filters Panel (boxed) */}
       <div className="panel panel--soft">
         <div className="filters-grid">
-          <select className="input" value={type} onChange={e => { setType(e.target.value); resetPage(); }}>
+          <select
+            className="input"
+            value={type}
+            onChange={e => { setType(e.target.value); resetPage(); }}
+          >
             {TYPE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
           </select>
 
-          <select className="input" value={priority} onChange={e => { setPriority(e.target.value); resetPage(); }}>
+          <select
+            className="input"
+            value={priority}
+            onChange={e => { setPriority(e.target.value); resetPage(); }}
+          >
             {PRIORITY_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
           </select>
 
@@ -1087,17 +789,27 @@ export default function UserTicket() {
 
           <div className="input-group">
             <label className="label">Start Date</label>
-            <input className="input" type="date" value={startDate} onChange={e => { setStartDate(e.target.value); resetPage(); }} />
+            <input
+              className="input"
+              type="date"
+              value={startDate}
+              onChange={e => { setStartDate(e.target.value); resetPage(); }}
+            />
           </div>
 
           <div className="input-group">
             <label className="label">End Date</label>
-            <input className="input" type="date" value={endDate} onChange={e => { setEndDate(e.target.value); resetPage(); }} />
+            <input
+              className="input"
+              type="date"
+              value={endDate}
+              onChange={e => { setEndDate(e.target.value); resetPage(); }}
+            />
           </div>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table Panel (boxed) */}
       <div className="panel panel--soft">
         <div className="table-responsive">
           <table className="table table--dark">
@@ -1134,7 +846,7 @@ export default function UserTicket() {
                     <td>{row.status}</td>
                     <td>{row.updated}</td>
                     <td>
-                      <button type="button" className="btn danger pill" onClick={() => handleDelete(row.id)}>
+                      <button className="btn danger pill" onClick={() => handleDelete(row.id)}>
                         Delete
                       </button>
                     </td>
@@ -1145,11 +857,10 @@ export default function UserTicket() {
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* Pagination — show only when rows exist */}
         {filtered.length > 0 && (
           <div className="pagination">
             <button
-              type="button"
               className="btn ghost pill"
               disabled={page === 1}
               onClick={() => setPage(p => Math.max(1, p - 1))}
@@ -1159,7 +870,6 @@ export default function UserTicket() {
 
             {Array.from({ length: totalPages }).map((_, i) => (
               <button
-                type="button"
                 key={i}
                 className={`btn pill ${page === i + 1 ? "primary" : "ghost"}`}
                 onClick={() => setPage(i + 1)}
@@ -1169,7 +879,6 @@ export default function UserTicket() {
             ))}
 
             <button
-              type="button"
               className="btn ghost pill"
               disabled={page === totalPages}
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
@@ -1179,6 +888,104 @@ export default function UserTicket() {
           </div>
         )}
       </div>
+
+      {/* Create Ticket Modal (respects dark theme; boxed card) */}
+      {isModalOpen && (
+        <div className="modal-backdrop" onClick={closeCreateModal}>
+          <div className="panel" style={{ maxWidth: "640px", width: "92vw" }} onClick={e => e.stopPropagation()}>
+            <h3>Create Ticket</h3>
+            {formErr && <div className="error">{formErr}</div>}
+
+            <form onSubmit={submitNewTicket} className="form">
+              <label className="field">
+                <span>Title*</span>
+                <input
+                  className="input"
+                  type="text"
+                  name="title"
+                  value={newTicket.title}
+                  onChange={handleNewTicketChange}
+                  required
+                />
+              </label>
+
+              <div className="form-row form-row--inline" style={{ gap: "0.75rem" }}>
+                <label className="field" style={{ flex: 1 }}>
+                  <span>Type*</span>
+                  <select
+                    className="input"
+                    name="type"
+                    value={newTicket.type}
+                    onChange={handleNewTicketChange}
+                    required
+                  >
+                    <option value="">Select</option>
+                    <option value="Type 1">Type 1</option>
+                    <option value="Type 2">Type 2</option>
+                    <option value="Type 3">Type 3</option>
+                  </select>
+                </label>
+
+                <label className="field" style={{ flex: 1 }}>
+                  <span>Priority*</span>
+                  <select
+                    className="input"
+                    name="priority"
+                    value={newTicket.priority}
+                    onChange={handleNewTicketChange}
+                    required
+                  >
+                    <option value="">Select</option>
+                    <option value="P1">P1</option>
+                    <option value="P2">P2</option>
+                    <option value="P3">P3</option>
+                  </select>
+                </label>
+              </div>
+
+              <label className="field">
+                <span>Description</span>
+                <textarea
+                  className="input"
+                  name="description"
+                  rows={3}
+                  value={newTicket.description}
+                  onChange={handleNewTicketChange}
+                />
+              </label>
+
+              <div className="form-row form-row--inline" style={{ gap: "0.75rem" }}>
+                <label className="field" style={{ flex: 1 }}>
+                  <span>Project</span>
+                  <input
+                    className="input"
+                    type="text"
+                    name="project"
+                    value={newTicket.project}
+                    onChange={handleNewTicketChange}
+                  />
+                </label>
+
+                <label className="field" style={{ flex: 1 }}>
+                  <span>Assigned To</span>
+                  <input
+                    className="input"
+                    type="text"
+                    name="assignedTo"
+                    value={newTicket.assignedTo}
+                    onChange={handleNewTicketChange}
+                  />
+                </label>
+              </div>
+
+              <div className="form-row form-row--inline" style={{ justifyContent: "flex-end", gap: "0.5rem" }}>
+                <button type="button" className="btn ghost pill" onClick={closeCreateModal}>Cancel</button>
+                <button type="submit" className="btn primary pill">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
