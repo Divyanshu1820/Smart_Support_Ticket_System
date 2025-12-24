@@ -38,6 +38,7 @@ import Signup from "./pages/Signup.jsx";
 import About from "./pages/About.jsx";
 import UserTicket from "./pages/UserTicket.jsx"; // dashboard/create-ticket
 import ProtectedRoute from "./components/ProtectedRoute.jsx"; // route guard
+import CreateTicket from "./pages/CreateTicket.jsx";
 import UserTickets from "./pages/UserTicket.jsx";
 
 export default function App() {
@@ -70,7 +71,14 @@ export default function App() {
                 <UserTickets/>
               </ProtectedRoute>
             }
-          />
+        />
+       <Route
+        path="/dashboard/create"
+      element={
+       <ProtectedRoute>
+      <CreateTicket />
+       </ProtectedRoute>
+  }/>
         </Routes>
       </main>
     </>
