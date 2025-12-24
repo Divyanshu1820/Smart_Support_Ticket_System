@@ -1,4 +1,4 @@
-
+ 
 :root {
   --bg: #0e0f13;
   --surface: #141622;
@@ -9,7 +9,7 @@
   --accent: #60a5fa;
   --border: #2a2e3f;
 }
-
+ 
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; }
 body {
@@ -18,16 +18,16 @@ body {
   color: var(--text);
   background: linear-gradient(180deg, #0e0f13 0%, #11131b 100%);
 }
-
+ 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
-
+ 
 .app-shell {
   min-height: 100%;
   display: grid;
   grid-template-rows: auto 1fr auto;
 }
-
+ 
 .navbar {
   position: sticky;
   top: 0;
@@ -47,7 +47,7 @@ a:hover { text-decoration: underline; }
 .brand { display: flex; align-items: center; gap: 10px; }
 .logo { font-size: 22px; }
 .brand-text { font-weight: 700; letter-spacing: 0.2px; }
-
+ 
 .nav-links { display: flex; gap: 16px; }
 .link {
   color: var(--text);
@@ -56,13 +56,13 @@ a:hover { text-decoration: underline; }
 }
 .link:hover { background: #1b1e2b; }
 .link.active { background: #1f2332; color: var(--primary); }
-
+ 
 .content {
   max-width: 1100px;
   margin: 0 auto;
   padding: 28px 20px;
 }
-
+ 
 .footer {
   border-top: 1px solid var(--border);
   background: #141622;
@@ -77,11 +77,9 @@ a:hover { text-decoration: underline; }
   align-items: center;
   justify-content: space-between;
 }
-.footer a {
-  color: var(--muted);
-}
+.footer a { color: var(--muted); }
 .footer a:hover { color: var(--text); }
-
+ 
 .hero {
   text-align: center;
   padding: 24px 0;
@@ -95,7 +93,7 @@ a:hover { text-decoration: underline; }
   color: var(--muted);
   max-width: 700px;
 }
-
+ 
 .hero-actions {
   display: inline-flex;
   gap: 12px;
@@ -113,17 +111,10 @@ a:hover { text-decoration: underline; }
   border-color: transparent;
   color: #052814;
 }
-.btn.primary:hover {
-  filter: brightness(1.05);
-}
-.btn.ghost {
-  color: var(--text);
-  background: transparent;
-}
-.btn.ghost:hover {
-  background: #1b1e2b;
-}
-
+.btn.primary:hover { filter: brightness(1.05); }
+.btn.ghost { color: var(--text); background: transparent; }
+.btn.ghost:hover { background: #1b1e2b; }
+ 
 .hero-grid {
   margin-top: 24px;
   display: grid;
@@ -137,12 +128,20 @@ a:hover { text-decoration: underline; }
   padding: 16px;
 }
 .card h3 { margin: 0 0 8px; }
-
+ 
+/* ===== Login page: broaden container & form ===== */
+.page {
+  max-width: 800px;      /* increase as needed: 720 / 800 / 900 */
+  margin: 0 auto;        /* center the page */
+  padding: 2rem 1.5rem;  /* comfortable padding */
+}
 .page h2 { margin-top: 0; }
+ 
 .form {
   display: grid;
   gap: 12px;
-  max-width: 420px;
+  max-width: 640px;      /* was 420px — gives room for the inline row */
+  width: 100%;           /* fill width of .page */
 }
 .form label {
   display: grid;
@@ -156,14 +155,114 @@ a:hover { text-decoration: underline; }
   color: var(--text);
 }
 .hint { color: var(--muted); }
-
+ 
 .bullets {
   margin-top: 12px;
   display: grid;
   gap: 6px;
 }
 .bullets li { color: var(--muted); }
-
+ 
+/* ===== Inline row: Remember me + checkbox + Forgot password ===== */
+.form-row.form-row--inline {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* keep them together on the left */
+  gap: 1rem;                   /* spacing between label and link */
+  flex-wrap: nowrap;           /* prevent wrapping on normal widths */
+  width: 100%;
+}
+ 
+/* Label shows text first, checkbox immediately to the right */
+.checkbox {
+  display: inline-flex !important;  /* override any global label block rules */
+  align-items: center;
+  gap: 0.5rem;                       /* space between text and checkbox */
+  margin: 0;
+  line-height: 1.2;
+}
+ 
+/* Normalize checkbox margins to avoid vertical misalignment */
+.checkbox input[type="checkbox"] { margin: 0; }
+ 
+/* Prevent the link from wrapping and keep it tidy */
+.forgot-link {
+  white-space: nowrap;
+  margin-left: 0.5rem;   /* small separation from the label */
+  text-decoration: none;
+  color: var(--accent);
+}
+.forgot-link:hover,
+.forgot-link:focus { text-decoration: underline; }
+ 
+/* ===== Responsive tweaks ===== */
 @media (max-width: 720px) {
   .hero-grid { grid-template-columns: 1fr; }
+ 
+  /* Allow wrapping only on very narrow screens, if needed */
+  .form-row.form-row--inline {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .forgot-link { margin-left: 0; }
 }
+ 
+
+/* Thicker border for login card */
+.login-card {
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: 1.25rem;
+  background: rgba(20, 25, 35, 0.6); /* matches dark theme */
+}
+
+/* Inline row that spaces items to edges */
+.form-row--inline.align-ends {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* forgot left, remember right */
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+/* Checkbox label base */
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Move checkbox to the right side of the text */
+.checkbox-right {
+  flex-direction: row-reverse; /* [span, input] -> input appears on right */
+}
+
+/* Optional: align checkbox baseline better */
+.checkbox-right input[type="checkbox"] {
+  transform: translateY(1px);
+}
+
+/* Forgot link style */
+.forgot-link {
+  color: #6fd4ff;
+  text-decoration: none;
+}
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+/* Navbar button style (Logout) */
+.nav-btn.btn,
+.nav-btn {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #3b82f6;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.nav-btn:hover {
+  background: #3b82f6;
+}
+
+ 
